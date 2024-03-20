@@ -19,6 +19,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration" Version="8.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.1" />
+    <PackageReference Include="Stripe.net" Version="43.19.0" />
     <PackageReference Include="WebApiRouteDebugger" Version="1.0.0" />
   </ItemGroup>
 
