@@ -125,6 +125,7 @@ namespace BookStoreWeb.Areas.Customer.Controllers
                 _unitOfWork.OrderDetails.Add(orderDetails);
                 _unitOfWork.Save();
             }
+            // if customer
             if (applicationUser.CompanyId.GetValueOrDefault() == 0)
             {
 
@@ -169,6 +170,7 @@ namespace BookStoreWeb.Areas.Customer.Controllers
                 Response.Headers.Add("Location", session.Url);
                 return new StatusCodeResult(303);
             }
+            // if company
             else
             {
                 return RedirectToAction("OrderConfirmation", "Cart",new {id=ShoppingCartVM.OrderHeader.Id});
@@ -234,6 +236,7 @@ namespace BookStoreWeb.Areas.Customer.Controllers
             _unitOfWork.Save();
             return RedirectToAction(nameof(Index));
         }
+
         public IActionResult Remove(int cartId)
         {
             var cart = _unitOfWork.ShoppingCart.GetSingleOrDefault(u => u.Id == cartId);

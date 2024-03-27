@@ -33,4 +33,11 @@
     <Folder Include="wwwroot\images\products\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\css\card-style.css">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
