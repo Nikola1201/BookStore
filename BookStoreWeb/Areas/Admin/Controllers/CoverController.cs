@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BookStoreWeb.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(Roles = "Admin,Employee")]
     public class CoverController : Controller
     {
 

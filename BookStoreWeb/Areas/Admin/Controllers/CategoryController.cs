@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace BookStoreWeb.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(Roles = "Admin,Employee")]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

@@ -10,7 +10,7 @@ using System.Linq;
 namespace BookStoreWeb.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(Roles = "Admin,Employee")]
     public class ProductController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
