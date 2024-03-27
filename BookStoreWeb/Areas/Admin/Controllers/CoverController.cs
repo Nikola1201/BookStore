@@ -1,10 +1,12 @@
 ﻿using BookStore.DataAccess.Repository.IRepository;
 using BookStore.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookStoreWeb.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize]
     public class CoverController : Controller
     {
 
