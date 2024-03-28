@@ -37,6 +37,7 @@ namespace BookStore.DataAccess.Repository
         {
             var orderFromDb = _db.OrderHeader.SingleOrDefault(x => x.Id == id);
 
+            orderFromDb.PaymentDate= DateTime.Now;
             orderFromDb.SessionId = sessionId;
             orderFromDb.PaymentIntentId = paymentIntentId;
         }
