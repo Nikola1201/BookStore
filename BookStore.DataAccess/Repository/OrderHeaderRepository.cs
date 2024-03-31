@@ -21,25 +21,29 @@ namespace BookStore.DataAccess.Repository
             _db.OrderHeader.Update(obj);
         }
 
-        public void UpdateStatus(int id, string orderStatus, string? paymenStatus = null)
+        public void UpdateStatus(int id, string orderStatus, string? paymentIntentId=null, string? paymentStatus = null)
         {
           var orderFromDb=_db.OrderHeader.SingleOrDefault(x => x.Id == id);
             if(orderFromDb != null)
             {
                 orderFromDb.OrderStatus = orderStatus;
-                if (paymenStatus != null)
+                if (paymentStatus != null)
                 {
-                    orderFromDb.PaymentStatus = paymenStatus;
+                    orderFromDb.PaymentStatus = paymentStatus;
+                }
+                if(paymentIntentId != null)
+                {
+                    orderFromDb.PaymentIntentId = paymentIntentId;
                 }
             }
+          
         }
-        public void UpdateStripePaymentId(int id, string sessionId, string paymentIntentId)
+        public void UpdateStripePaymentId(int id, string sessionId)
         {
             var orderFromDb = _db.OrderHeader.SingleOrDefault(x => x.Id == id);
 
             orderFromDb.PaymentDate= DateTime.Now;
             orderFromDb.SessionId = sessionId;
-            orderFromDb.PaymentIntentId = paymentIntentId;
         }
     }
 }

@@ -82,7 +82,7 @@ namespace BookStoreWeb.Areas.Admin.Controllers
 
             var service = new SessionService();
             Session session = service.Create(options);
-            _unitOfWork.OrderHeader.UpdateStripePaymentId(OrderVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
+            _unitOfWork.OrderHeader.UpdateStripePaymentId(OrderVM.OrderHeader.Id, session.Id);
             _unitOfWork.Save();
             Response.Headers.Add("Location", session.Url);
             return new StatusCodeResult(303);
@@ -97,7 +97,7 @@ namespace BookStoreWeb.Areas.Admin.Controllers
                 //Check Stripe Status
                 if (session.PaymentStatus.ToLower() == "paid")
                 {
-                    _unitOfWork.OrderHeader.UpdateStatus(orderHeaderid, orderHeader.OrderStatus, SD.PaymentStatusApproved);
+                    _unitOfWork.OrderHeader.UpdateStatus(orderHeaderid,orderHeader.OrderStatus, session.PaymentIntentId,SD.PaymentStatusApproved);
                     _unitOfWork.Save();
                 }
             }

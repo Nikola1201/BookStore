@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
-using Stripe.BillingPortal;
 using Stripe.Checkout;
 using System.Security.Claims;
 using Session = Stripe.Checkout.Session;
@@ -165,7 +164,7 @@ namespace BookStoreWeb.Areas.Customer.Controllers
 
                 var service = new SessionService();
                 Session session = service.Create(options);
-                _unitOfWork.OrderHeader.UpdateStripePaymentId(ShoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
+                _unitOfWork.OrderHeader.UpdateStripePaymentId(ShoppingCartVM.OrderHeader.Id, session.Id);
                 _unitOfWork.Save();
                 Response.Headers.Add("Location", session.Url);
                 return new StatusCodeResult(303);
@@ -189,7 +188,7 @@ namespace BookStoreWeb.Areas.Customer.Controllers
                 //Check Stripe Status
                 if (session.PaymentStatus.ToLower() == "paid")
                 {
-                    _unitOfWork.OrderHeader.UpdateStatus(id, SD.StatusApproved, SD.PaymentStatusApproved);
+                    _unitOfWork.OrderHeader.UpdateStatus(id, SD.StatusApproved,session.PaymentIntentId, SD.PaymentStatusApproved);
                     _unitOfWork.Save();
                 }
             }
