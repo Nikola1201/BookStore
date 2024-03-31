@@ -5,6 +5,7 @@ using BookStore.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
+using Stripe.Checkout;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -35,15 +36,75 @@ namespace BookStoreWeb.Areas.Admin.Controllers
 
             return View(OrderVM);
         }
+
         [ActionName("Details")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult DetailsPay(int orderId)
         {
-            
+            OrderVM.OrderHeader = _unitOfWork.OrderHeader.GetSingleOrDefault(u => u.Id == OrderVM.OrderHeader.Id, includeProperties: "ApplicationUser");
+            OrderVM.OrderDetails = _unitOfWork.OrderDetails.GetAll(o => o.OrderId == OrderVM.OrderHeader.Id, includeProperties: "Product");
 
-            return View(OrderVM);
+
+            //Stripe settings
+            var domain = "https://localhost:44365/";
+            var options = new SessionCreateOptions
+            {
+                PaymentMethodTypes = new List<string>
+                {
+                    "card",
+                },
+                LineItems = new List<SessionLineItemOptions>()
+            ,
+                Mode = "payment",
+                SuccessUrl = domain + $"Admin/Order/PaymentConfirmation?orderHeaderid={OrderVM.OrderHeader.Id}",
+                CancelUrl = domain + $"Admin/Order/Details?orderId={OrderVM.OrderHeader.Id}",
+            };
+
+            foreach (var item in OrderVM.OrderDetails)
+            {
+
+                var sessionLineItem = new SessionLineItemOptions
+                {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long)(item.Price * 100),
+                        Currency = "usd",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = item.Product.Title,
+                        },
+                    },
+                    Quantity = item.Count,
+                };
+                options.LineItems.Add(sessionLineItem);
+            }
+
+            var service = new SessionService();
+            Session session = service.Create(options);
+            _unitOfWork.OrderHeader.UpdateStripePaymentId(OrderVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
+            _unitOfWork.Save();
+            Response.Headers.Add("Location", session.Url);
+            return new StatusCodeResult(303);
         }
+        public IActionResult PaymentConfirmation(int orderHeaderid)
+        {
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.GetSingleOrDefault(u => u.Id == orderHeaderid);
+            if (orderHeader.PaymentStatus == SD.PaymentStatusDelayedPayment)
+            {
+                var service = new SessionService();
+                Session session = service.Get(orderHeader.SessionId);
+                //Check Stripe Status
+                if (session.PaymentStatus.ToLower() == "paid")
+                {
+                    _unitOfWork.OrderHeader.UpdateStatus(orderHeaderid, orderHeader.OrderStatus, SD.PaymentStatusApproved);
+                    _unitOfWork.Save();
+                }
+            }
+
+            return View(orderHeaderid);
+        }
+
         [HttpPost]
         [Authorize(Roles = SD.Role_Admin + "," + SD.Role_Employee)]
         [ValidateAntiForgeryToken]
@@ -90,9 +151,9 @@ namespace BookStoreWeb.Areas.Admin.Controllers
             orderHeaderFromDb.Carrier = OrderVM.OrderHeader.Carrier;
             orderHeaderFromDb.OrderStatus = SD.StatusShipped;
             orderHeaderFromDb.ShippingDate = DateTime.Now;
-            if(orderHeaderFromDb.PaymentStatus== SD.PaymentStatusDelayedPayment)
+            if (orderHeaderFromDb.PaymentStatus == SD.PaymentStatusDelayedPayment)
             {
-               orderHeaderFromDb.PaymentDueDate = DateTime.Now.AddDays(30);
+                orderHeaderFromDb.PaymentDueDate = DateTime.Now.AddDays(30);
             }
 
             _unitOfWork.OrderHeader.Update(orderHeaderFromDb);

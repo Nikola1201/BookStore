@@ -43,7 +43,14 @@ namespace BookStoreWeb.Areas.Customer.Controllers
         {
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-            shoppingCart.ApplicationUserId = claim.Value;
+            if (claim != null)
+            {
+                shoppingCart.ApplicationUserId = claim.Value;
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
 
             ShoppingCart cartFromDb = _unitOfWork.ShoppingCart.GetSingleOrDefault(
                 u => u.ApplicationUserId == claim.Value && u.ProductId == shoppingCart.ProductId);
